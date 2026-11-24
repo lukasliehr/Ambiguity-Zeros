@@ -28,7 +28,7 @@ theorem measurable_cubePulse (L : ℝ) : Measurable (cubePulse L : Coord d → �
   measurable_const.indicator (measurable_unitCube L)
 
 theorem cubePulse_memLp (L : ℝ) (p : ℝ≥0∞) : MemLp (cubePulse L : Coord d → ℂ) p volume :=
-  memLp_indicator_const p (measurable_unitCube L) 1
+  memLp_indicator_const p (measurable_unitCube L).nullMeasurableSet 1
     (Or.inr (isCompact_unitCube L).measure_lt_top.ne)
 
 def cubeTrain (L : ℝ) (site : ι → Coord d) (c : ι → ℂ) (t : Coord d) : ℂ :=

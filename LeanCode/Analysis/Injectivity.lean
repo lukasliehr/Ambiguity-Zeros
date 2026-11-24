@@ -82,7 +82,7 @@ private def kernelCoords : (E × E) ≃ₗ[ℝ] E × E where
     ext <;> simp <;> module
 
 private theorem coords_qmp (L : (E × E) ≃ₗ[ℝ] E × E) :
-    Measure.QuasiMeasurePreserving L (volume.prod volume) (volume.prod volume) := by
+    QuasiMeasurePreserving L (volume.prod volume) (volume.prod volume) := by
   exact MeasureTheory.Measure.LinearMap.quasiMeasurePreserving
     (volume.prod volume) L.toLinearMap (LinearEquiv.isUnit_det' L).ne_zero
 
@@ -124,9 +124,9 @@ theorem ambiguity_eq_kernel_ae_of {f g : E → ℂ} (hf : MemLp f 2 volume)
         ((hfm.comp (measurable_fst.comp hL)).mul (continuous_star.measurable.comp (hfm.comp (measurable_snd.comp hL))))
         ((hgm.comp (measurable_fst.comp hL)).mul (continuous_star.measurable.comp (hgm.comp (measurable_snd.comp hL))))
   have hpull := (coords_qmp L.symm).ae h'
-  have hfst : Measure.QuasiMeasurePreserving (@Prod.fst E E) (volume.prod volume) volume :=
+  have hfst : QuasiMeasurePreserving (@Prod.fst E E) (volume.prod volume) volume :=
     Measure.quasiMeasurePreserving_fst
-  have hsnd : Measure.QuasiMeasurePreserving (@Prod.snd E E) (volume.prod volume) volume :=
+  have hsnd : QuasiMeasurePreserving (@Prod.snd E E) (volume.prod volume) volume :=
     Measure.quasiMeasurePreserving_snd
   filter_upwards [hpull, hfst.ae_eq_comp hf', hsnd.ae_eq_comp hf', hfst.ae_eq_comp hg', hsnd.ae_eq_comp hg']
     with p hp hf₁ hf₂ hg₁ hg₂ hmem

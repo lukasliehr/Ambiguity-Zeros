@@ -90,7 +90,8 @@ theorem prescribed_of_local
     constructor
     · rintro ⟨_, ⟨u, hu, rfl⟩, heq⟩
       refine ⟨u, hu, S.injective ?_⟩
-      simpa only [map_neg] using heq
+      simp only [map_neg]
+      exact heq
     · rintro ⟨u, hu, rfl⟩
       exact ⟨H u, ⟨u, hu, rfl⟩, (map_neg S (A u)).symm⟩
 

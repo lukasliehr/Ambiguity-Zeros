@@ -46,7 +46,7 @@ theorem realization_toLp {d : ℕ} {T : Set (PhaseSpace d)}
   obtain ⟨f, hf, hzeros⟩ := h
   exact ⟨hf.toLp f, (openZeros_toLp f hf).trans hzeros⟩
 
-/-- Theorem 1.1, for every finite dimension, with the exact Showcase definitions. -/
+/-- Theorem 1.1, for every finite dimension, with the exact definitions of the Challenge. -/
 theorem bounded_openZeros_phaseRetrieval_proved
     {d : ℕ} (_hd : 1 ≤ d) (w : L2 d) (hw : w ≠ 0)
     (hbounded : Bornology.IsBounded (openZeros w)) : DoesPhaseRetrieval w := by

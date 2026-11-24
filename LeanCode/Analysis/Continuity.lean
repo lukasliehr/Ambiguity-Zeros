@@ -33,8 +33,8 @@ theorem continuous_modulation_apply :
   have h : Continuous (fun q : E × L2 E ↦ translation q.1 (𝓕 q.2)) :=
     continuous_translation_apply.comp
       (continuous_fst.prodMk (FourierTransform.continuous_fourier.comp continuous_snd))
-  simpa only [modulation_eq_fourierInv_translation] using
-    FourierTransform.continuous_fourierInv.comp h
+  simp only [modulation_eq_fourierInv_translation]
+  exact FourierTransform.continuous_fourierInv.comp h
 
 theorem crossAmbiguity_continuous {f g : E → ℂ}
     (hf : MemLp f 2 volume) (hg : MemLp g 2 volume) :

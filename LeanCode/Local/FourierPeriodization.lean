@@ -23,7 +23,12 @@ theorem isOpen_openCell {d : ℕ} (a : Coordinates d) : IsOpen (openCell a) := b
   have h := isOpen_iInter_of_finite
     (fun i : Fin d => isOpen_Ioo.preimage (continuous_apply i) :
       ∀ i : Fin d, IsOpen ((fun x : Coordinates d => x i) ⁻¹' Ioo (a i) (a i + 1)))
-  simpa only [openCell, Set.setOf_forall] using h
+  have heq : openCell a =
+      ⋂ i : Fin d, (fun x : Coordinates d => x i) ⁻¹' Ioo (a i) (a i + 1) := by
+    ext x
+    simp [openCell]
+  rw [heq]
+  exact h
 
 theorem openCell_subset_rightCell {d : ℕ} (a : Coordinates d) :
     openCell a ⊆ rightCell a :=

@@ -32,25 +32,20 @@ The correspondence with the Lean declarations in the namespace `AmbiguityHoles` 
 
 ## Lean entry points
 
-- [Showcase.lean](Showcase.lean): a self-contained formulation of the three theorems, including the definitions of the ambiguity function, its open zero set, the short-time Fourier transform and phase retrieval. It imports only Mathlib and uses `sorry` in place of the proofs.
-- [Showcase_WithProofs.lean](Showcase_WithProofs.lean): the same statements as in [Showcase.lean](Showcase.lean) with complete proofs, which are supplied by the internal library `LeanCode`. The three theorems depend only on the axioms `propext`, `Classical.choice` and `Quot.sound`.
-
-The two showcase files declare the same theorem names and should not be imported together.
+- [Challenge.lean](Challenge.lean): a self-contained formulation of the three theorems, including the definitions of the ambiguity function, its open zero set, the short-time Fourier transform and phase retrieval. It imports only Mathlib and uses `sorry` in place of the proofs.
+- [Solution.lean](Solution.lean): the same definitions and statements as in [Challenge.lean](Challenge.lean) with complete proofs, which are supplied by the internal library `LeanCode`. The three theorems depend only on the axioms `propext`, `Classical.choice` and `Quot.sound`.
+- [comparator.json](comparator.json): Comparator configuration pairing `Challenge.lean` and `Solution.lean`.
+- [formalization.yaml](formalization.yaml): metadata for the [Palomar](https://palomar-registry.org) registry.
 
 ## Build
 
-The project uses Lean `v4.29.0` and Mathlib `v4.29.0`, which are pinned in `lean-toolchain` and `lake-manifest.json`. From the repository root, run
+The project uses Lean `v4.35.0` and Mathlib `v4.35.0`, which are pinned in `lean-toolchain` and `lake-manifest.json`. With [Lean](https://lean-lang.org/install/) installed, run the following commands.
 
 ```bash
+git clone --branch palomar https://github.com/lukasliehr/Ambiguity-Zeros.git
+cd Ambiguity-Zeros
 lake exe cache get
 lake build
 ```
 
-The first command downloads the compiled Mathlib cache. The default targets are `LeanCode`, `Showcase` and `Showcase_WithProofs`. Building `Showcase` reports three uses of `sorry`, which are the intended placeholders.
-
-The axioms of the three theorems and the agreement of the two showcase files can be checked with
-
-```bash
-lake build +LeanCode.Audit
-python3 scripts/check_completion.py
-```
+The command `lake exe cache get` downloads the compiled Mathlib cache, and `lake build` compiles the library, `Challenge.lean` and `Solution.lean`. Building `Challenge.lean` reports three uses of `sorry`, which are the intended placeholders.

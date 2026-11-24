@@ -1,4 +1,8 @@
-import Mathlib
+module
+
+public import Mathlib
+
+@[expose] public section
 
 /-! The dimension-independent support argument in the proof of Theorem 1.1. -/
 

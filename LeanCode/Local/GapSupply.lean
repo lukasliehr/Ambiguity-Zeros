@@ -97,8 +97,12 @@ theorem exists_gapSupply {d : ℕ} (θ : Coord d)
       · simp only [differenceCoefficient,h0,if_pos]
         exact contDiff_const
       by_cases h1 : k j = 1
-      · simpa only [differenceCoefficient,h0,h1,if_neg,if_pos] using (contDiff_const.add H).neg
-      · simpa only [differenceCoefficient,h0,h1,if_neg] using H
+      · have hk (r : ℂ) : differenceCoefficient (k j) r = -(1 + r) := by
+          simp [differenceCoefficient, h1]
+        simpa only [hk] using (contDiff_const.add H).neg
+      · have hk (r : ℂ) : differenceCoefficient (k j) r = r := by
+          simp [differenceCoefficient, h0, h1]
+        simpa only [hk] using H
     obtain ⟨b,hb,hbmul⟩ := hmul M hM
     refine ⟨fromRapid b hb, fun ω hω ↦ ?_⟩
     rw [hfrom b hb ω, hfrom c hc ω, hbmul _ hω]

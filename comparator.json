@@ -1,0 +1,12 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Solution",
+  "theorem_names": [
+    "AmbiguityHoles.bounded_openZeros_phaseRetrieval",
+    "AmbiguityHoles.prescribed_openZeros",
+    "AmbiguityHoles.forbidden_annulus"
+  ],
+  "definition_names": [],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],
+  "enable_nanoda": true
+}

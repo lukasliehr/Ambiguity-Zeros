@@ -1,0 +1,37 @@
+version: "v0.4"
+
+project:
+  name: "Prescribed holes in the time frequency plane and ptychographic phase retrieval"
+  description: >-
+    A Lean 4 formalization of the three main theorems of the paper "Prescribed
+    holes in the time frequency plane and ptychographic phase retrieval" by
+    J. de Dios Pont, P. Jaming, L. Liehr and M. A. Taylor. (1) Every nonzero
+    window in L²(ℝᵈ) whose ambiguity function has a bounded open zero set does
+    phase retrieval. (2) Every bounded regular open subset of ℝ²ᵈ is, after a
+    sufficiently small rescaling and a translation away from the origin,
+    together with its reflection the open zero set of an ambiguity function.
+    (3) There is an annulus centered at the origin of ℝ² that is not contained
+    in the open zero set of the ambiguity function of any nonzero function in
+    L²(ℝ).
+  authors:
+    - "Jaume de Dios Pont"
+    - "Philippe Jaming"
+    - "Lukas Liehr"
+    - "Mitchell A. Taylor"
+  license: "Apache-2.0"
+  responsible_maintainers:
+    - "Lukas Liehr"
+
+classification:
+  arxiv: ["math.CA", "math.FA"]
+
+sources:
+  - title: "Prescribed holes in the time frequency plane and ptychographic phase retrieval"
+    relationship: "formalizes"
+
+automation:
+  methods:
+    - method: "agent"
+
+review:
+  status: "author-verified"

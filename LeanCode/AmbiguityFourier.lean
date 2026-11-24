@@ -1,6 +1,10 @@
-import LeanCode.GaussianObstruction
-import AmbiguityZeros.ToMathlib.STFT
-import Mathlib.Tactic.LinearCombination
+module
+
+public import LeanCode.GaussianObstruction
+public import AmbiguityZeros.ToMathlib.STFT
+public import Mathlib.Tactic.LinearCombination
+
+@[expose] public section
 
 /-! The spectrogram identity `symplecticFourier_stft_sq`, applied to the ambiguity density. -/
 
@@ -43,7 +47,7 @@ theorem fourier_rotation_eq_symplectic {F : Plane → ℂ} (hF : Integrable F) (
     ((Real.fourierIntegral_convergent_iff (rotation z)).2 hF)
   change (∫ p : ℝ × ℝ, Real.fourierChar (-inner ℝ (WithLp.toLp 2 p) (rotation z)) •
     F (WithLp.toLp 2 p) ∂(volume.prod volume)) = _
-  rw [integral_prod _ (by simpa only [Function.comp_def] using hint)]
+  rw [integral_prod _ (by simpa only [Function.comp_def] using! hint)]
   unfold symplecticFourier
   apply integral_congr_ae
   filter_upwards [] with x
@@ -60,12 +64,12 @@ theorem density_fixed {f : ℝ → ℂ} (hf : MemLp f 2 volume) (z : Plane) :
   have h := symplecticFourier_stft_sq hf hf z.fst z.snd
   simp_rw [stft_self_norm hf] at h
   convert h using 1
-  simp [density, Complex.mul_conj', Complex.ofReal_pow]
+  all_goals simp [density, Complex.mul_conj', Complex.ofReal_pow]
 
 theorem density_zero_pos {f : ℝ → ℂ} (hf : MemLp f 2 volume)
     (hne : ¬ f =ᵐ[volume] 0) : 0 < (density f 0).re := by
   have hn : eLpNorm f 2 volume ≠ 0 :=
-    fun h ↦ hne ((eLpNorm_eq_zero_iff hf.aestronglyMeasurable (by norm_num)).1 h)
+    fun h ↦ hne ((eLpNorm_eq_zero_iff (by norm_num)).1 h)
   have hp := ENNReal.toReal_pos hn hf.eLpNorm_ne_top
   change 0 < ‖ambiguity f 0 0‖ ^ 2
   rw [ambiguity_zero_zero hf]

@@ -1,6 +1,7 @@
 module
 
 public import Mathlib.Analysis.InnerProductSpace.Adjoint
+public import Mathlib.Topology.Algebra.Module.Equiv.Prod
 import Mathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional
 import Mathlib.Tactic.Abel
 

@@ -47,7 +47,8 @@ private theorem shiftedRegion_cross_zero {d : ℕ} {ι : Type*}
     simp only [PiLp.sub_apply] at H H' ⊢
     exact abs_le.mpr ⟨by linarith [H.1,H'.2], by linarith [H.2,H'.1]⟩
   exact (train_no_overlap_same G (i := i) (j := j) (Or.inl rfl)
-    (by simpa only [one_mul] using hx) hab) hij
+    (by simpa only [one_mul] using
+      (show coordBox ρ (p - q - s • firstAxis (d + 1)) from hx)) hab) hij
 
 private theorem referenceRegion_cross_zero {d : ℕ} {ι : Type*}
     {site : ι → Coord (d+1)} {σ s L ρ : ℝ} (G : TrainGeometry site σ s L ρ)
@@ -61,7 +62,8 @@ private theorem referenceRegion_cross_zero {d : ℕ} {ι : Type*}
   have ha0 : a=0 := ha
   subst a
   exact (by norm_num : (1 : ℝ) ≠ -1) (train_overlap_mixed G (e := 1) (Or.inl rfl)
-    (by simpa only [one_mul] using hx) hb (by simpa only [add_zero] using hij)).2
+    (by simpa only [one_mul] using
+      (show coordBox ρ (p - q - s • firstAxis (d + 1)) from hx)) hb (by simpa only [add_zero] using hij)).2
 
 private theorem trainRegion_mono {d : ℕ} {ι : Type*} {site : ι → Coord d} {L : ℝ}
     {S T : Set (Coord d)} (h : S ⊆ T) :

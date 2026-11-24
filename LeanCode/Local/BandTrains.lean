@@ -36,7 +36,7 @@ theorem cross_reference_self (w : ι → ℂ) {x ω : Coord (d+1)} (hx : x ∈ b
   intro i j
   simpa only [add_zero, one_mul] using
     train_no_overlap_same G (i := i) (j := j) (Or.inl rfl)
-      (by simpa only [one_mul] using hx) hzero
+      (by simpa only [one_mul] using (show coordBox ρ (x - s • firstAxis (d + 1)) from hx)) hzero
 
 theorem cross_shifted_trains (c b : ι → ℂ) {a a' x ω : Coord (d+1)}
     (ha : a ∈ band s (L+3*ρ)) (ha' : a' ∈ band s (L+3*ρ)) (hx : x ∈ band s ρ) :
@@ -50,7 +50,7 @@ theorem cross_shifted_trains (c b : ι → ℂ) {a a' x ω : Coord (d+1)}
   rw [translate_cubeTrain, translate_cubeTrain]
   apply cubeTrain_cross_zero
   intro i j
-  exact train_no_overlap_same G (Or.inl rfl) (by simpa only [one_mul] using hx) hab
+  exact train_no_overlap_same G (Or.inl rfl) (by simpa only [one_mul] using (show coordBox ρ (x - s • firstAxis (d + 1)) from hx)) hab
 
 theorem cross_reference_shifted (w c : ι → ℂ) {a x ω : Coord (d+1)}
     (ha : a ∈ band s (L+3*ρ)) (hx : x ∈ band s ρ) :
@@ -59,7 +59,7 @@ theorem cross_reference_shifted (w c : ι → ℂ) {a x ω : Coord (d+1)}
   apply cubeTrain_cross_zero
   intro i j ho
   exact (by norm_num : (1 : ℝ) ≠ -1) ((train_overlap_mixed G (e := 1) (Or.inl rfl)
-    (by simpa only [one_mul] using hx) ha ho).2)
+    (by simpa only [one_mul] using (show coordBox ρ (x - s • firstAxis (d + 1)) from hx)) ha ho).2)
 
 theorem cross_shifted_reference [Countable ι] (w c : ι → ℂ)
     (hc : Summable fun i ↦ ‖c i * star (w i)‖)

@@ -25,8 +25,6 @@ private theorem centered_integral (w ω : ℝ) :
       (w * Real.sinc (Real.pi * ω * w) : ℝ) := by
   by_cases hω : ω = 0
   · simp [hω]
-    change (w : ℂ) * 1 = (w : ℂ)
-    exact mul_one _
   let c := -(2 * Real.pi * ω)
   have hc : c ≠ 0 := neg_ne_zero.mpr (mul_ne_zero (mul_ne_zero (by norm_num) Real.pi_ne_zero) hω)
   have hchar (t : ℝ) : (Real.fourierChar (-(ω * t)) : ℂ) =

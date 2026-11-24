@@ -43,7 +43,8 @@ theorem fourier_toLp_ae {f : E → ℂ} (h1 : Integrable f) (h2 : MemLp f 2) :
     _ = _ := by
       simp only [smul_eq_mul, SchwartzMap.fourier_coe]
       simpa only [Real.fourier_eq, VectorFourier.fourierIntegral, smul_eq_mul, mul_comm,
-        ContinuousLinearMap.flip_apply, innerₗ_apply_apply, real_inner_comm] using
+        ContinuousLinearMap.flip_apply, LinearMap.flip_apply, innerₗ_apply_apply,
+        real_inner_comm] using
         (VectorFourier.integral_fourierIntegral_smul_eq_flip
           (L := innerₗ E) Real.continuous_fourierChar continuous_inner h1 s.integrable).symm
 

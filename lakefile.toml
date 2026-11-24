@@ -1,7 +1,7 @@
 name = "AmbiguityHoles"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["LeanCode", "Showcase", "Showcase_WithProofs"]
+defaultTargets = ["LeanCode", "Challenge", "Solution"]
 
 [leanOptions]
 relaxedAutoImplicit = false
@@ -14,12 +14,12 @@ srcDir = "LeanCode/Vendor"
 name = "LeanCode"
 
 [[lean_lib]]
-name = "Showcase"
+name = "Challenge"
 
 [[lean_lib]]
-name = "Showcase_WithProofs"
+name = "Solution"
 
 [[require]]
 name = "mathlib"
 scope = "leanprover-community"
-rev = "v4.29.0"
+rev = "v4.35.0"

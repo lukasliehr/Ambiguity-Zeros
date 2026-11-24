@@ -33,7 +33,7 @@ theorem ambiguity_zero_zero_eq_zero_iff (hf : MemLp f 2 volume) :
     ambiguity f 0 0 = 0 ↔ f =ᵐ[volume] 0 := by
   rw [ambiguity_zero_zero hf, Complex.ofReal_eq_zero, pow_eq_zero_iff (by decide)]
   rw [ENNReal.toReal_eq_zero_iff, or_iff_left hf.eLpNorm_ne_top]
-  exact eLpNorm_eq_zero_iff hf.1 (by norm_num)
+  exact eLpNorm_eq_zero_iff (by norm_num)
 
 private theorem ambiguity_const_mul (f : E → ℂ) (c : ℂ) (x ω : E) :
     ambiguity (fun t ↦ c * f t) x ω = (c * star c) * ambiguity f x ω := by

@@ -1,4 +1,8 @@
-import LeanCode.Definitions
+module
+
+public import LeanCode.Definitions
+
+@[expose] public section
 
 /-! The exact sign calculation for the dimension-one Laguerre--Gaussian certificate.
 The Fourier eigenfunction identity is a separate analytic obligation.

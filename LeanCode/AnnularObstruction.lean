@@ -1,6 +1,10 @@
-import LeanCode.AmbiguityFourier
-import LeanCode.SignObstruction
-import LeanCode.RealLine
+module
+
+public import LeanCode.AmbiguityFourier
+public import LeanCode.SignObstruction
+public import LeanCode.RealLine
+
+@[expose] public section
 
 /-! Theorem 1.3: a nonzero ambiguity function cannot vanish on an entire annulus. -/
 
@@ -56,7 +60,7 @@ theorem exists_annulus_no_vanishing :
     have h : (∫ z, (density f z * certificate z).re) =
         (∫ z, density f z * certificate z).re := integral_re hprod
     rw [density_certificate_orthogonal hf] at h
-    simpa only [hre, map_zero] using h
+    simpa only [hre, map_zero] using! h
   apply sign_obstruction (fun z ↦ (density f z).re) (fun z ↦ (certificate z).re) 0
     (Complex.continuous_re.comp (density_continuous hf))
     (Complex.continuous_re.comp certificate_continuous)
@@ -72,7 +76,7 @@ end AmbiguityHoles.GaussianObstruction
 
 namespace AmbiguityHoles
 
-/-- The exact statement of Theorem 1.3 from the paper-facing Showcase. -/
+/-- The exact statement of Theorem 1.3 from the Challenge. -/
 theorem forbidden_annulus_proved :
     ∃ r R : ℝ, 0 < r ∧ r < R ∧
       ∀ f : L2 1, f ≠ 0 → ¬ annulus 1 r R ⊆ openZeros f := by
@@ -87,7 +91,7 @@ theorem forbidden_annulus_proved :
     apply Lp.ext
     have h := realLine.symm.measurePreserving.quasiMeasurePreserving.ae hzero
     have hfzero : (f : Rd 1 → ℂ) =ᵐ[volume] 0 := by
-      simpa [fR] using h
+      simpa [fR] using! h
     exact hfzero.trans (Lp.coeFn_zero ℂ 2 volume).symm
   apply hforbid fR hfR hfR_ne
   intro z hzr hzR
@@ -99,6 +103,6 @@ theorem forbidden_annulus_proved :
     rw [hnorm]
     exact ⟨hzr, hzR⟩
   have hz := interior_subset (hsubset hmem)
-  simpa only [fR, ambiguity_realLine] using hz
+  simpa only [fR, ambiguity_realLine] using! hz
 
 end AmbiguityHoles

@@ -1,6 +1,11 @@
-import Mathlib.MeasureTheory.Function.LpSeminorm.LpNorm
-import AmbiguityZeros.ToMathlib.Ambiguity
-import AmbiguityZeros.ToMathlib.TranslationModulation
+module
+
+public import Mathlib.MeasureTheory.Function.LpSeminorm.LpNorm
+public import Mathlib.Analysis.Normed.Lp.SmoothApprox
+public import AmbiguityZeros.ToMathlib.Ambiguity
+public import AmbiguityZeros.ToMathlib.TranslationModulation
+
+@[expose] public section
 
 namespace AmbiguityZeros.ToMathlib
 
@@ -31,40 +36,6 @@ theorem stft_eq_crossAmbiguity (hw : MemLp w 2 volume) (hu : MemLp u 2 volume)
     simp [mul_comm, mul_left_comm]
   rw [← mul_assoc, hcancel, one_mul]
 
-theorem stft_zero_window (_hu : MemLp u 2 volume) (x ω : ℝ) :
-    stft 0 u x ω = 0 := by
-  simp [stft]
-
-theorem stft_zero_signal (_hw : MemLp w 2 volume) (x ω : ℝ) :
-    stft w 0 x ω = 0 := by
-  simp [stft]
-
-theorem stft_integrand_integrable
-    (hw : MemLp w 2 volume) (hu : MemLp u 2 volume) (x ω : ℝ) :
-    Integrable (fun t ↦ u t * star (w (t - x)) * (Real.fourierChar (-(ω * t)) : ℂ))
-      volume := by
-  have hslice : Integrable (fun t ↦ u t * star (w (t - x))) volume := by
-    simpa [translate] using
-      integrable_mul_of_memLp hu (conj_memLp (translate_memLp x hw))
-  have hmeas : AEStronglyMeasurable (fun t ↦ (Real.fourierChar (-(ω * t)) : ℂ)) volume := by
-    fun_prop
-  have hbound : ∀ᵐ t ∂volume, ‖(Real.fourierChar (-(ω * t)) : ℂ)‖ ≤ (1 : ℝ) := by
-    filter_upwards [Filter.Eventually.of_forall (fun t ↦ norm_fourierChar (-(ω * t)))] with t ht
-    exact le_of_eq ht
-  simpa [mul_assoc] using hslice.mul_bdd hmeas hbound
-
-theorem stft_slice_aestronglyMeasurable
-    (hw : AEStronglyMeasurable w volume) (hu : AEStronglyMeasurable u volume)
-    (x : ℝ) :
-    AEStronglyMeasurable (fun t ↦ u t * star (w (t - x))) volume := by
-  simpa [translate] using
-    hu.mul (conj_aestronglyMeasurable (translate_aestronglyMeasurable x hw))
-
-theorem stft_slice_integrable (hw : MemLp w 2 volume) (hu : MemLp u 2 volume) (x : ℝ) :
-    Integrable (fun t ↦ u t * star (w (t - x))) volume := by
-  simpa [translate] using
-    integrable_mul_of_memLp hu (conj_memLp (translate_memLp x hw))
-
 theorem stft_eq_fourierIntegral (_hw : MemLp w 2 volume) (_hu : MemLp u 2 volume) (x : ℝ) :
     stft w u x = FourierTransform.fourier (fun t ↦ u t * star (w (t - x))) := by
   ext ω
@@ -77,7 +48,7 @@ theorem stft_eq_fourierIntegral_apply
     stft w u x ω = FourierTransform.fourier (fun t ↦ u t * star (w (t - x))) ω := by
   simpa using congrArg (fun f : ℝ → ℂ => f ω) (stft_eq_fourierIntegral (w := w) (u := u) hw hu x)
 
-private def stftWindowSchwartz (x : ℝ) (w : SchwartzMap ℝ ℂ) : SchwartzMap ℝ ℂ :=
+def stftWindowSchwartz (x : ℝ) (w : SchwartzMap ℝ ℂ) : SchwartzMap ℝ ℂ :=
   SchwartzMap.postcompCLM (𝕜 := ℝ) (F := ℂ) (G := ℂ) Complex.conjCLE
     (w.compSubConstCLM ℂ x)
 
@@ -86,7 +57,7 @@ private def stftWindowSchwartz (x : ℝ) (w : SchwartzMap ℝ ℂ) : SchwartzMap
     stftWindowSchwartz x w t = star (w (t - x)) := by
   simp [stftWindowSchwartz, Complex.conjCLE_apply]
 
-private def stftSliceSchwartz (w u : SchwartzMap ℝ ℂ) (x : ℝ) : SchwartzMap ℝ ℂ :=
+def stftSliceSchwartz (w u : SchwartzMap ℝ ℂ) (x : ℝ) : SchwartzMap ℝ ℂ :=
   SchwartzMap.bilinLeftCLM (ContinuousLinearMap.mul ℂ ℂ)
     (stftWindowSchwartz x w).hasTemperateGrowth u
 
@@ -111,28 +82,7 @@ private theorem integral_norm_sq_stft_slice_schwartz
     (w u : SchwartzMap ℝ ℂ) (x : ℝ) :
     ∫ ω, ‖stft w u x ω‖ ^ 2 = ∫ t, ‖stftSliceSchwartz w u x t‖ ^ 2 := by
   rw [stft_eq_fourierIntegral_schwartz w u x]
-  simpa using SchwartzMap.integral_norm_sq_fourier (stftSliceSchwartz w u x)
-
-private theorem stft_slice_parseval_shift_schwartz
-    (w u : SchwartzMap ℝ ℂ) (x y : ℝ) :
-    ∫ η, inner ℂ (modulate (-x / 2) (FourierTransform.fourier (stftSliceSchwartz w u y)) η)
-        (modulate (x / 2) (FourierTransform.fourier (stftSliceSchwartz w u y)) η) =
-      ∫ t, inner ℂ (translate (x / 2) (stftSliceSchwartz w u y) t)
-        (translate (-x / 2) (stftSliceSchwartz w u y) t) := by
-  let s : SchwartzMap ℝ ℂ := stftSliceSchwartz w u y
-  have h :
-      ∫ η, inner ℂ (FourierTransform.fourier (s.compSubConstCLM ℂ (x / 2)) η)
-          (FourierTransform.fourier (s.compSubConstCLM ℂ (-x / 2)) η) =
-        ∫ t, inner ℂ (s.compSubConstCLM ℂ (x / 2) t) (s.compSubConstCLM ℂ (-x / 2) t) := by
-    simpa using
-      (SchwartzMap.integral_sesq_fourier_fourier
-        (f := s.compSubConstCLM ℂ (x / 2))
-        (g := s.compSubConstCLM ℂ (-x / 2))
-        (M := innerSL ℂ))
-  rw [fourier_compSubConstCLM_eq_modulate (f := s) (x := x / 2),
-    fourier_compSubConstCLM_eq_modulate (f := s) (x := -x / 2)] at h
-  simpa [s, SchwartzMap.compSubConstCLM_apply, stftSliceSchwartz_apply, modulate, translate,
-    mul_assoc, mul_left_comm, mul_comm] using h
+  simpa using! SchwartzMap.integral_norm_sq_fourier (stftSliceSchwartz w u x)
 
 private theorem stft_continuous_schwartz (w u : SchwartzMap ℝ ℂ) :
     Continuous (fun p : ℝ × ℝ ↦ stft w u p.1 p.2) := by
@@ -140,7 +90,7 @@ private theorem stft_continuous_schwartz (w u : SchwartzMap ℝ ℂ) :
   have hu : MemLp (u : ℝ → ℂ) 2 volume := u.memLp 2 volume
   have hcont1 : Continuous (fun p : ℝ × ℝ ↦ (Real.fourierChar (-(p.2 * p.1 / 2)) : ℂ)) := by
     exact (continuous_subtype_val.comp
-      (by simpa using
+      (by simpa using!
         (Real.continuous_fourierChar.comp
           (by fun_prop : Continuous fun p : ℝ × ℝ ↦ -(p.2 * p.1 / 2)))))
   have hcont2 : Continuous (fun p : ℝ × ℝ ↦ crossAmbiguity u w p.1 p.2) :=
@@ -250,13 +200,12 @@ private theorem integrable_stft_sq_slice_schwartz
         (fun ω : ℝ ↦ ‖(FourierTransform.fourier (stftSliceSchwartz w u x)) ω‖ ^ 2)
         volume := by
     exact integrable_norm_sq_schwartz (FourierTransform.fourier (stftSliceSchwartz w u x))
-  simpa [stft_eq_fourierIntegral_schwartz w u x] using h_fourier
+  simpa [stft_eq_fourierIntegral_schwartz w u x] using! h_fourier
 
 private theorem crossAmbiguity_le_lpNorm
     {f g : ℝ → ℂ} (hf : MemLp f 2 volume) (hg : MemLp g 2 volume) (x ω : ℝ) :
     ‖crossAmbiguity f g x ω‖ ≤ lpNorm f 2 volume * lpNorm g 2 volume := by
-  simpa [MeasureTheory.toReal_eLpNorm hf.aestronglyMeasurable,
-    MeasureTheory.toReal_eLpNorm hg.aestronglyMeasurable] using
+  simpa [MeasureTheory.toReal_eLpNorm] using
     crossAmbiguity_le (f := f) (g := g) hf hg x ω
 
 private theorem norm_stft_sub_le_lpNorm
@@ -311,9 +260,9 @@ private theorem exists_schwartz_lpNorm_sub_le
   let s : SchwartzMap ℝ ℂ := hg₁.toSchwartzMap hg₂
   have hs : MemLp (f - (s : ℝ → ℂ)) 2 volume := hf.sub (s.memLp 2 volume)
   have hg₃' : eLpNorm (f - (s : ℝ → ℂ)) 2 volume ≤ ENNReal.ofReal ε := by
-    simpa [s] using hg₃
+    simpa [s] using! hg₃
   refine ⟨s, ?_⟩
-  rw [← MeasureTheory.toReal_eLpNorm hs.aestronglyMeasurable]
+  rw [← MeasureTheory.toReal_eLpNorm]
   exact (ENNReal.toReal_le_toReal hs.eLpNorm_ne_top (by simp)).mpr hg₃' |>.trans_eq
     (ENNReal.toReal_ofReal hε.le)
 
@@ -492,10 +441,6 @@ theorem stft_sq_integrable_schwartz (w u : SchwartzMap ℝ ℂ) :
     rw [h_outer]
     simpa using hkernel.integral_norm_prod_right
 
-theorem stft_sq_complex_integrable_schwartz (w u : SchwartzMap ℝ ℂ) :
-    Integrable (fun p : ℝ × ℝ ↦ ((‖stft w u p.1 p.2‖ ^ 2 : ℝ) : ℂ)) (volume.prod volume) := by
-  simpa using (stft_sq_integrable_schwartz w u).ofReal (𝕜 := ℂ)
-
 theorem integral_stft_sq_schwartz (w u : SchwartzMap ℝ ℂ) :
     ∫ x, ∫ ω, ‖stft w u x ω‖ ^ 2 =
       (eLpNorm (u : ℝ → ℂ) 2 volume).toReal ^ 2 * (eLpNorm (w : ℝ → ℂ) 2 volume).toReal ^ 2 := by
@@ -505,7 +450,7 @@ theorem integral_stft_sq_schwartz (w u : SchwartzMap ℝ ℂ) :
     integrable_stft_kernel_schwartz w u
   have hkernel_swap : Integrable (Function.uncurry (fun x t : ℝ ↦ ‖u t‖ ^ 2 * ‖w (t - x)‖ ^ 2))
       (volume.prod volume) := by
-    simpa [Function.uncurry, Function.comp] using hkernel.swap
+    simpa [Function.uncurry, Function.comp] using! hkernel.swap
   calc
     ∫ x, ∫ ω, ‖stft w u x ω‖ ^ 2
         = ∫ x, ∫ t, ‖u t‖ ^ 2 * ‖w (t - x)‖ ^ 2 := by
@@ -545,7 +490,7 @@ private theorem integral_stft_sq_phase_slice_schwartz
     (w u : SchwartzMap ℝ ℂ) (y x : ℝ) :
     ∫ η, ((‖stft w u y η‖ ^ 2 : ℝ) : ℂ) * (Real.fourierChar (x * η) : ℂ) =
       ∫ t, star (stftSliceSchwartz w u y t) * stftSliceSchwartz w u y (t + x) := by
-  simpa [stft_eq_fourierIntegral_schwartz_apply] using
+  simpa [stft_eq_fourierIntegral_schwartz_apply] using!
     integral_fourier_sq_phase_schwartz (stftSliceSchwartz w u y) x
 
 private theorem signal_autocorr_integrable_schwartz
@@ -561,7 +506,7 @@ private theorem signal_autocorr_integrable_schwartz
 private theorem reflected_memLp_schwartz
     (w : SchwartzMap ℝ ℂ) :
     MemLp (fun y : ℝ ↦ w (-y)) 2 volume := by
-  simpa using
+  simpa using!
     (w.memLp 2 volume).comp_measurePreserving (Measure.measurePreserving_neg (volume : Measure ℝ))
 
 private theorem window_autocorr_integrable_schwartz
@@ -645,7 +590,7 @@ private theorem integral_window_autocorr_phase_schwartz
     intro y
     have hmul := Real.fourierChar.map_add_eq_mul' (-(ω * t)) (-(ω * (y - t)))
     simpa [show -(ω * y) = -(ω * t) + -(ω * (y - t)) by ring,
-      mul_comm, mul_left_comm, mul_assoc] using congrArg (fun z : Circle ↦ (z : ℂ)) hmul
+      mul_comm, mul_left_comm, mul_assoc] using! congrArg (fun z : Circle ↦ (z : ℂ)) hmul
   have hshift_t :
       ∫ y, w (t - y) * star (w (t + x - y)) * (Real.fourierChar (-(ω * y)) : ℂ) =
         (Real.fourierChar (-(ω * t)) : ℂ) *
@@ -687,7 +632,7 @@ private theorem integral_window_autocorr_phase_schwartz
     intro y
     have hmul := Real.fourierChar.map_add_eq_mul' (-(ω * (x / 2))) (ω * (y + x / 2))
     simpa [show ω * y = -(ω * (x / 2)) + ω * (y + x / 2) by ring,
-      mul_comm, mul_left_comm, mul_assoc] using congrArg (fun z : Circle ↦ (z : ℂ)) hmul
+      mul_comm, mul_left_comm, mul_assoc] using! congrArg (fun z : Circle ↦ (z : ℂ)) hmul
   have hshift_x :
       ∫ y, w y * star (w (x + y)) * (Real.fourierChar (ω * y) : ℂ) =
         (Real.fourierChar (-(ω * (x / 2))) : ℂ) *
@@ -779,7 +724,7 @@ theorem symplecticFourier_stft_sq_schwartz
       (autocorr_kernel_integrable_schwartz u w x).mul_bdd hphase_meas hphase_bound
   have hK :
       Integrable (Function.uncurry K) (volume.prod volume) := by
-    simpa [K, G, Function.uncurry, mul_assoc, mul_left_comm, mul_comm] using hG.swap
+    simpa [K, G, Function.uncurry, mul_assoc, mul_left_comm, mul_comm] using! hG.swap
   calc
     symplecticFourier (fun y η ↦ ((‖stft w u y η‖ ^ 2 : ℝ) : ℂ)) x ω
         = ∫ y, (Real.fourierChar (-(ω * y)) : ℂ) *
@@ -794,7 +739,7 @@ theorem symplecticFourier_stft_sq_schwartz
                 intro η
                 have hmul := Real.fourierChar.map_add_eq_mul' (-(ω * y)) (x * η)
                 simpa [show -(ω * y - x * η) = -(ω * y) + x * η by ring,
-                  mul_comm, mul_left_comm, mul_assoc] using
+                  mul_comm, mul_left_comm, mul_assoc] using!
                   congrArg (fun z : Circle ↦ (z : ℂ)) hmul
               calc
                 ∫ η, ((‖stft w u y η‖ ^ 2 : ℝ) : ℂ) * (Real.fourierChar (-(ω * y - x * η)) : ℂ)
@@ -895,10 +840,10 @@ private theorem lpNorm_stft_schwartz
   norm_num
   rw [(MeasureTheory.integral_integral
       (f := fun x ω : ℝ ↦ ‖stft w u x ω‖ ^ 2)
-      (by simpa [Function.uncurry] using stft_sq_integrable_schwartz w u)).symm]
+      (by simpa [Function.uncurry] using! stft_sq_integrable_schwartz w u)).symm]
   rw [integral_stft_sq_schwartz w u]
-  rw [MeasureTheory.toReal_eLpNorm (u.memLp 2 volume).aestronglyMeasurable,
-    MeasureTheory.toReal_eLpNorm (w.memLp 2 volume).aestronglyMeasurable]
+  rw [MeasureTheory.toReal_eLpNorm (f := (u : ℝ → ℂ)),
+    MeasureTheory.toReal_eLpNorm (f := (w : ℝ → ℂ))]
   have hnonneg :
       0 ≤ lpNorm (u : ℝ → ℂ) 2 volume * lpNorm (w : ℝ → ℂ) 2 volume := by
     exact mul_nonneg MeasureTheory.lpNorm_nonneg MeasureTheory.lpNorm_nonneg
@@ -924,7 +869,7 @@ private theorem stft_continuous_of_memLp (hw : MemLp w 2 volume) (hu : MemLp u 2
     Continuous (fun p : ℝ × ℝ ↦ stft w u p.1 p.2) := by
   have hcont1 : Continuous (fun p : ℝ × ℝ ↦ (Real.fourierChar (-(p.2 * p.1 / 2)) : ℂ)) := by
     exact (continuous_subtype_val.comp
-      (by simpa using
+      (by simpa using!
         (Real.continuous_fourierChar.comp
           (by fun_prop : Continuous fun p : ℝ × ℝ ↦ -(p.2 * p.1 / 2)))))
   have hcont2 : Continuous (fun p : ℝ × ℝ ↦ crossAmbiguity u w p.1 p.2) :=
@@ -961,7 +906,8 @@ private theorem eLpNorm_stft_le
   have hliminf :
       eLpNorm F 2 (volume.prod volume) ≤
         atTop.liminf (fun n : ℕ ↦ eLpNorm (Fₙ n) 2 (volume.prod volume)) := by
-    exact MeasureTheory.Lp.eLpNorm_lim_le_liminf_eLpNorm hmeas F hpoint
+    exact MeasureTheory.Lp.eLpNorm_lim_le_liminf_eLpNorm hmeas F
+      (stft_aestronglyMeasurable_of_memLp (w := w) (u := u) hw hu) hpoint
   have hprod :
       Tendsto
         (fun n : ℕ ↦
@@ -1000,7 +946,7 @@ theorem stft_sq_integrable (hw : MemLp w 2 volume) (hu : MemLp u 2 volume) :
     lt_of_le_of_lt (eLpNorm_stft_le (w := w) (u := u) hw hu) hfinite_rhs
   have hmem :
       MemLp (fun p : ℝ × ℝ ↦ stft w u p.1 p.2) 2 (volume.prod volume) :=
-    ⟨stft_aestronglyMeasurable_of_memLp (w := w) (u := u) hw hu, hfin⟩
+    memLp_iff.mpr hfin
   exact (memLp_two_iff_integrable_sq_norm
     (stft_aestronglyMeasurable_of_memLp (w := w) (u := u) hw hu)).mp hmem
 
@@ -1019,7 +965,7 @@ private theorem lpNorm_stft_le (hw : MemLp w 2 volume) (hu : MemLp u 2 volume) :
       lpNorm u 2 volume * lpNorm w 2 volume := by
   have hmem : MemLp (fun p : ℝ × ℝ ↦ stft w u p.1 p.2) 2 (volume.prod volume) :=
     stft_memLp (w := w) (u := u) hw hu
-  rw [← MeasureTheory.toReal_eLpNorm hmem.aestronglyMeasurable]
+  rw [← MeasureTheory.toReal_eLpNorm (f := fun p : ℝ × ℝ ↦ stft w u p.1 p.2)]
   simpa using
     (ENNReal.toReal_le_toReal hmem.eLpNorm_ne_top ENNReal.ofReal_ne_top).mpr
       (eLpNorm_stft_le (w := w) (u := u) hw hu)
@@ -1197,7 +1143,7 @@ private theorem lpNorm_stft_eq (hw : MemLp w 2 volume) (hu : MemLp u 2 volume) :
             lpNorm (F - Fₙ n) 2 (volume.prod volume) =
               lpNorm (fun p : ℝ × ℝ ↦ Fₙ n p - F p) 2 (volume.prod volume) := by
           dsimp [F, Fₙ]
-          simpa using
+          simpa using!
             (MeasureTheory.lpNorm_sub_comm
               (f := fun p : ℝ × ℝ ↦ stft w u p.1 p.2)
               (g := fun p : ℝ × ℝ ↦ stft (schwartzApprox hw n) (schwartzApprox hu n) p.1 p.2)
@@ -1214,60 +1160,12 @@ private theorem lpNorm_stft_eq (hw : MemLp w 2 volume) (hu : MemLp u 2 volume) :
       (schwartzApprox_tendsto_lpNorm hu).mul (schwartzApprox_tendsto_lpNorm hw)
   simpa [F] using tendsto_nhds_unique hnorm hnorms
 
-theorem integral_stft_sq (hw : MemLp w 2 volume) (hu : MemLp u 2 volume) :
-    ∫ x, ∫ ω, ‖stft w u x ω‖ ^ 2 =
-      (eLpNorm u 2 volume).toReal ^ 2 * (eLpNorm w 2 volume).toReal ^ 2 := by
-  let F : ℝ × ℝ → ℂ := fun p ↦ stft w u p.1 p.2
-  have hcalc : (∫ x, ∫ ω, ‖stft w u x ω‖ ^ 2) ^ (1 / (2 : ℝ)) =
-      lpNorm u 2 volume * lpNorm w 2 volume := by
-    calc
-      (∫ x, ∫ ω, ‖stft w u x ω‖ ^ 2) ^ (1 / (2 : ℝ))
-          = lpNorm F 2 (volume.prod volume) := by
-              symm
-              rw [MeasureTheory.lpNorm_eq_integral_norm_rpow_toReal
-                (μ := volume.prod volume) (p := (2 : ENNReal))
-                (by norm_num : (2 : ENNReal) ≠ 0)
-                (by norm_num : (2 : ENNReal) ≠ ⊤)
-                (stft_aestronglyMeasurable_of_memLp (w := w) (u := u) hw hu)]
-              norm_num
-              rw [(MeasureTheory.integral_integral
-                (f := fun x ω : ℝ ↦ ‖stft w u x ω‖ ^ 2)
-                (by simpa [Function.uncurry] using
-                  stft_sq_integrable (w := w) (u := u) hw hu)).symm]
-      _ = lpNorm u 2 volume * lpNorm w 2 volume := by
-            simpa [F] using lpNorm_stft_eq (w := w) (u := u) hw hu
-  rw [← Real.sqrt_eq_rpow] at hcalc
-  have hint_nonneg : 0 ≤ ∫ x, ∫ ω, ‖stft w u x ω‖ ^ 2 := by
-    refine integral_nonneg ?_
-    intro x
-    refine integral_nonneg ?_
-    intro ω
-    positivity
-  have hsquare :
-      Real.sqrt (∫ x, ∫ ω, ‖stft w u x ω‖ ^ 2) *
-          Real.sqrt (∫ x, ∫ ω, ‖stft w u x ω‖ ^ 2) =
-        (lpNorm u 2 volume * lpNorm w 2 volume) *
-          (lpNorm u 2 volume * lpNorm w 2 volume) := by
-    simpa [pow_two] using congrArg (fun z : ℝ ↦ z * z) hcalc
-  rw [MeasureTheory.toReal_eLpNorm hu.aestronglyMeasurable,
-    MeasureTheory.toReal_eLpNorm hw.aestronglyMeasurable]
-  calc
-    ∫ x, ∫ ω, ‖stft w u x ω‖ ^ 2
-        = Real.sqrt (∫ x, ∫ ω, ‖stft w u x ω‖ ^ 2) *
-            Real.sqrt (∫ x, ∫ ω, ‖stft w u x ω‖ ^ 2) := by
-              symm
-              simpa [pow_two] using (Real.sq_sqrt hint_nonneg)
-    _ = (lpNorm u 2 volume * lpNorm w 2 volume) *
-          (lpNorm u 2 volume * lpNorm w 2 volume) := hsquare
-    _ = lpNorm u 2 volume ^ 2 * lpNorm w 2 volume ^ 2 := by
-          ring
-
 private theorem lpNorm_mul_le_real
     {α : Type*} {m : MeasurableSpace α} {μ : Measure α} {f g : α → ℝ}
     (hf : MemLp f 2 μ) (hg : MemLp g 2 μ) :
     lpNorm (fun x ↦ f x * g x) 1 μ ≤ lpNorm f 2 μ * lpNorm g 2 μ := by
   have hmem : MemLp (fun x ↦ f x * g x) 1 μ := by
-    simpa [mul_comm] using hg.mul hf
+    exact hf.fun_mul hg
   rw [MeasureTheory.lpNorm_one_eq_integral_norm hmem.aestronglyMeasurable]
   have hpq : Real.HolderConjugate 2 2 := by
     constructor <;> norm_num
@@ -1288,7 +1186,7 @@ private theorem lpNorm_mul_le_real
     norm_num at h
     have h' := congrArg ENNReal.toReal h
     rw [ENNReal.toReal_ofReal (by positivity),
-      MeasureTheory.toReal_eLpNorm hf.aestronglyMeasurable] at h'
+      MeasureTheory.toReal_eLpNorm (f := f)] at h'
     simpa [Real.norm_eq_abs] using h'.symm
   have hg_lp :
       (∫ x, |g x| ^ (2 : ℝ) ∂μ) ^ (1 / (2 : ℝ)) = lpNorm g 2 μ := by
@@ -1297,7 +1195,7 @@ private theorem lpNorm_mul_le_real
     norm_num at h
     have h' := congrArg ENNReal.toReal h
     rw [ENNReal.toReal_ofReal (by positivity),
-      MeasureTheory.toReal_eLpNorm hg.aestronglyMeasurable] at h'
+      MeasureTheory.toReal_eLpNorm (f := g)] at h'
     simpa [Real.norm_eq_abs] using h'.symm
   have hleft :
       ∫ x, ‖f x * g x‖ ∂μ = ∫ x, |f x| * |g x| ∂μ := by
@@ -1355,8 +1253,8 @@ private theorem lpNorm_stft_sq_sub_tendsto_zero
     dsimp [Bₙ]
     exact hmemDiff.norm
   have hHmem : MemLp (fun p : ℝ × ℝ ↦ Aₙ n p * Bₙ n p) 1 (volume.prod volume) := by
-    simpa [Aₙ, Bₙ, Pi.mul_apply] using
-      (hBmem.mul hAmem : MemLp (Aₙ n * Bₙ n) 1 (volume.prod volume))
+    simpa [Aₙ, Bₙ, Pi.mul_apply] using!
+      (hAmem.mul hBmem : MemLp (Aₙ n * Bₙ n) 1 (volume.prod volume))
   have hpoint :
       ∀ p : ℝ × ℝ, ‖Dₙ n p‖ ≤ Aₙ n p * Bₙ n p := by
     intro p
@@ -1485,8 +1383,8 @@ private theorem ambiguity_tendsto_schwartzApprox
             exact ambiguity_sub_le (f := f) (u := (schwartzApprox hf n : ℝ → ℂ) - f) hf herrMem x ω
     _ = 2 * lpNorm f 2 volume * lpNorm ((schwartzApprox hf n : ℝ → ℂ) - f) 2 volume +
           lpNorm ((schwartzApprox hf n : ℝ → ℂ) - f) 2 volume ^ 2 := by
-            rw [MeasureTheory.toReal_eLpNorm hf.aestronglyMeasurable,
-              MeasureTheory.toReal_eLpNorm herrMem.aestronglyMeasurable]
+            rw [MeasureTheory.toReal_eLpNorm (f := f),
+              MeasureTheory.toReal_eLpNorm (f := (schwartzApprox hf n : ℝ → ℂ) - f)]
 
 private theorem symplecticFourier_sub_le_lpNorm_one
     {G₁ G₂ : ℝ → ℝ → ℂ}
@@ -1592,124 +1490,6 @@ theorem symplecticFourier_stft_sq
     rw [hEq]
     exact hright
   exact tendsto_nhds_unique hleft hright'
-
-theorem stft_sq_eq_implies_ambiguity_eq
-    (hw : MemLp w 2 volume) (hu : MemLp u 2 volume) (hv : MemLp v 2 volume)
-    (h : ∀ x ω, ‖stft w u x ω‖ = ‖stft w v x ω‖) :
-    ∀ x ω, (ambiguity u x ω - ambiguity v x ω) * star (ambiguity w x ω) = 0 := by
-  intro x ω
-  have hSF :
-      symplecticFourier (fun y η ↦ ((‖stft w u y η‖ ^ 2 : ℝ) : ℂ)) x ω =
-        symplecticFourier (fun y η ↦ ((‖stft w v y η‖ ^ 2 : ℝ) : ℂ)) x ω := by
-    simp [symplecticFourier, h]
-  rw [symplecticFourier_stft_sq (w := w) (u := u) hw hu x ω,
-    symplecticFourier_stft_sq (w := w) (u := v) hw hv x ω] at hSF
-  calc
-    (ambiguity u x ω - ambiguity v x ω) * star (ambiguity w x ω)
-        = ambiguity u x ω * star (ambiguity w x ω) -
-            ambiguity v x ω * star (ambiguity w x ω) := by
-              ring
-    _ = 0 := by
-      rw [hSF]
-      ring
-
-theorem stft_sq_eq_implies_ambiguity_eq_schwartz
-    (w u v : SchwartzMap ℝ ℂ)
-    (h : ∀ x ω, ‖stft w u x ω‖ = ‖stft w v x ω‖) :
-    ∀ x ω, (ambiguity u x ω - ambiguity v x ω) * star (ambiguity w x ω) = 0 := by
-  intro x ω
-  have hSF :
-      symplecticFourier (fun y η ↦ ((‖stft w u y η‖ ^ 2 : ℝ) : ℂ)) x ω =
-        symplecticFourier (fun y η ↦ ((‖stft w v y η‖ ^ 2 : ℝ) : ℂ)) x ω := by
-    simp [symplecticFourier, h]
-  rw [symplecticFourier_stft_sq_schwartz w u x ω,
-    symplecticFourier_stft_sq_schwartz w v x ω] at hSF
-  calc
-    (ambiguity u x ω - ambiguity v x ω) * star (ambiguity w x ω)
-        = ambiguity u x ω * star (ambiguity w x ω) -
-            ambiguity v x ω * star (ambiguity w x ω) := by
-              ring_nf
-    _ = 0 := by
-      rw [hSF]
-      ring_nf
-
-theorem stft_continuous (hw : MemLp w 2 volume) (hu : MemLp u 2 volume) :
-    Continuous (fun p : ℝ × ℝ ↦ stft w u p.1 p.2) := by
-  have hcont1 : Continuous (fun p : ℝ × ℝ ↦ (Real.fourierChar (-(p.2 * p.1 / 2)) : ℂ)) := by
-    exact (continuous_subtype_val.comp
-      (by simpa using
-        (Real.continuous_fourierChar.comp
-          (by fun_prop : Continuous fun p : ℝ × ℝ ↦ -(p.2 * p.1 / 2)))))
-  have hcont2 : Continuous (fun p : ℝ × ℝ ↦ crossAmbiguity u w p.1 p.2) :=
-    crossAmbiguity_continuous (f := u) (g := w) hu hw
-  have hcont : Continuous (fun p : ℝ × ℝ ↦
-      (Real.fourierChar (-(p.2 * p.1 / 2)) : ℂ) * crossAmbiguity u w p.1 p.2) := hcont1.mul hcont2
-  have hEq : (fun p : ℝ × ℝ ↦ stft w u p.1 p.2) =
-      fun p : ℝ × ℝ ↦ (Real.fourierChar (-(p.2 * p.1 / 2)) : ℂ) * crossAmbiguity u w p.1 p.2 := by
-    funext p
-    simpa [stft] using stft_eq_crossAmbiguity (w := w) (u := u) hw hu p.1 p.2
-  rw [hEq]
-  exact hcont
-
-theorem stft_aestronglyMeasurable
-    (hw : MemLp w 2 volume) (hu : MemLp u 2 volume) :
-    AEStronglyMeasurable (fun p : ℝ × ℝ ↦ stft w u p.1 p.2) (volume.prod volume) := by
-  exact (stft_continuous (w := w) (u := u) hw hu).aestronglyMeasurable
-
-theorem stft_measurable
-    (hw : MemLp w 2 volume) (hu : MemLp u 2 volume) :
-    Measurable (fun p : ℝ × ℝ ↦ stft w u p.1 p.2) := by
-  exact (stft_continuous (w := w) (u := u) hw hu).measurable
-
-theorem stft_sq_measurable (hw : MemLp w 2 volume) (hu : MemLp u 2 volume) :
-    Measurable (fun p : ℝ × ℝ ↦ ‖stft w u p.1 p.2‖ ^ 2) := by
-  have hcont : Continuous (fun p : ℝ × ℝ ↦ ‖stft w u p.1 p.2‖) :=
-    (stft_continuous (w := w) (u := u) hw hu).norm
-  exact (hcont.pow 2).measurable
-
-theorem stft_sq_aestronglyMeasurable (hw : MemLp w 2 volume) (hu : MemLp u 2 volume) :
-    AEStronglyMeasurable (fun p : ℝ × ℝ ↦ ‖stft w u p.1 p.2‖ ^ 2) (volume.prod volume) := by
-  exact ((stft_continuous (w := w) (u := u) hw hu).norm.pow 2).aestronglyMeasurable
-
-private theorem stft_slice_product_integrable
-    (x y : ℝ)
-    (hsliceL2 : MemLp (fun t ↦ u t * star (w (t - y))) 2 volume) :
-    Integrable
-      (fun t ↦ (u (t + x / 2) * star (w (t + x / 2 - y))) *
-        star (u (t - x / 2) * star (w (t - x / 2 - y)))) volume := by
-  let s : ℝ → ℂ := fun t ↦ u t * star (w (t - y))
-  have hsL2 : MemLp s 2 volume := by
-    simpa [s] using hsliceL2
-  have hsL2_left : MemLp (translate (-x / 2) s) 2 volume := translate_memLp (-x / 2) hsL2
-  have hsL2_right : MemLp (translate (x / 2) s) 2 volume := translate_memLp (x / 2) hsL2
-  have h :
-      Integrable (fun t ↦ star (translate (x / 2) s t) * translate (-x / 2) s t) volume := by
-    exact integrable_mul_of_memLp (conj_memLp hsL2_right) hsL2_left
-  convert h using 1
-  funext t
-  have hx₁ : t + -(-x / 2) = t + x / 2 := by ring
-  simp [s, translate, sub_eq_add_neg, star_mul, hx₁, mul_left_comm, mul_comm]
-
-theorem stft_slice_parseval_shift
-    (_hw : MemLp w 2 volume) (_hu : MemLp u 2 volume)
-    (x y : ℝ) (hsliceL2 : MemLp (fun t ↦ u t * star (w (t - y))) 2 volume) :
-    let s : ℝ → ℂ := fun t ↦ u t * star (w (t - y))
-    inner ℂ
-        (FourierTransform.fourier ((translate_memLp (x / 2) hsliceL2).toLp
-          (translate (x / 2) s)))
-        (FourierTransform.fourier ((translate_memLp (-x / 2) hsliceL2).toLp
-          (translate (-x / 2) s))) =
-      inner ℂ ((translate_memLp (x / 2) hsliceL2).toLp (translate (x / 2) s))
-        ((translate_memLp (-x / 2) hsliceL2).toLp (translate (-x / 2) s)) := by
-  -- Auxiliary `Lp` identity for a fixed slice; the primary STFT route is now
-  -- Schwartz-first with density, so this is no longer a foundational API lemma.
-  dsimp
-  exact
-    MeasureTheory.Lp.inner_fourier_eq
-      (f := (translate_memLp (x / 2) hsliceL2).toLp
-        (translate (x / 2) fun t ↦ u t * star (w (t - y))))
-      (g := (translate_memLp (-x / 2) hsliceL2).toLp
-        (translate (-x / 2) fun t ↦ u t * star (w (t - y))))
 
 end
 

@@ -1,6 +1,8 @@
-import LeanCode.Analysis.PhaseRetrieval
-import LeanCode.Symplectic.Covariance
-import LeanCode.Local.FourierGap
+module
+
+public import LeanCode.Analysis.PhaseRetrieval
+public import LeanCode.Symplectic.Covariance
+public import LeanCode.Local.FourierGap
 
 /-! Kernel axiom audit of the main analytic and geometric proof components. -/
 

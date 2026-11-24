@@ -30,7 +30,8 @@ theorem integrable_fourier_eq_zero_ae (f : E → ℂ) (hf : Integrable f volume)
       Real.continuous_fourierChar continuous_inner (f := (r : E → ℂ)) (g := f) r.integrable hf
   have he : (∫ t, (𝓕 (r : E → ℂ)) t * f t) = ∫ t, r t * (𝓕 f) t := by
     simpa only [Real.fourier_eq, VectorFourier.fourierIntegral, smul_eq_mul,
-      ContinuousLinearMap.flip_apply, innerₗ_apply_apply, real_inner_comm] using hswap
+      ContinuousLinearMap.flip_apply, LinearMap.flip_apply, innerₗ_apply_apply,
+      real_inner_comm] using hswap
   rw [← hr, SchwartzMap.fourier_coe, he, hz]
   simp
 

@@ -1,5 +1,5 @@
-"""Check that the theorems proved in Showcase_WithProofs.lean have exactly the
-statements of Showcase.lean and depend only on Lean's standard axioms.
+"""Check that the theorems proved in Solution.lean have exactly the
+statements of Challenge.lean and depend only on Lean's standard axioms.
 
 Run from anywhere with `python3 scripts/check_completion.py`.
 """
@@ -16,9 +16,9 @@ targets = [
     "AmbiguityHoles.forbidden_annulus",
 ]
 allowed_axioms = {"propext", "Classical.choice", "Quot.sound"}
-showcase = (root / "Showcase.lean").read_text()
+showcase = (root / "Challenge.lean").read_text()
 source = (
-    "import Showcase_WithProofs\n"
+    "import Solution\n"
     "set_option linter.unusedVariables false\n"
     "noncomputable section\nopen MeasureTheory\nnamespace ShowcaseConsistency\n"
 )
@@ -44,8 +44,8 @@ for name in targets:
     source += f"example : {expected_type} := @{name}\n#print axioms {name}\n"
 source += "end ShowcaseConsistency\n"
 
-if subprocess.run(["lake", "build", "Showcase_WithProofs"], cwd=root).returncode:
-    raise SystemExit("Building Showcase_WithProofs failed.")
+if subprocess.run(["lake", "build", "Solution"], cwd=root).returncode:
+    raise SystemExit("Building Solution failed.")
 
 with tempfile.TemporaryDirectory() as directory:
     check = Path(directory) / "Completion.lean"

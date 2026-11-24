@@ -8,7 +8,7 @@ public section
 
 namespace AmbiguityHoles
 
-/-- Theorem 1.2, with the exact hypotheses and conclusion of the Showcase. -/
+/-- Theorem 1.2, with the exact hypotheses and conclusion of the Challenge. -/
 theorem prescribed_openZeros_proved
     {d : ℕ} (hd : 1 ≤ d) (Ω : Set (PhaseSpace d))
     (hbounded : Bornology.IsBounded Ω) (_hne : Ω.Nonempty)

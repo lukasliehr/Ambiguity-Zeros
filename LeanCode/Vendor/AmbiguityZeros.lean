@@ -1,4 +1,5 @@
-import AmbiguityZeros.ToMathlib.OscillatoryIntegral
-import AmbiguityZeros.ToMathlib.TranslationModulation
-import AmbiguityZeros.ToMathlib.Ambiguity
-import AmbiguityZeros.ToMathlib.STFT
+module
+
+public import AmbiguityZeros.ToMathlib.TranslationModulation
+public import AmbiguityZeros.ToMathlib.Ambiguity
+public import AmbiguityZeros.ToMathlib.STFT

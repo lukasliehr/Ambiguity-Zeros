@@ -6,6 +6,8 @@ import Mathlib.Tactic.Ring
 import Mathlib.MeasureTheory.Function.L1Space.Integrable
 import Mathlib.MeasureTheory.Function.LpSeminorm.CompareExp
 import Mathlib.MeasureTheory.Function.LpSeminorm.Prod
+import Mathlib.MeasureTheory.Group.Integral
+import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 
 public section
 
@@ -29,11 +31,14 @@ theorem translate_memLp (x : E) (hf : MemLp f p volume) :
 
 theorem modulate_memLp (ω : E) (hf : MemLp f p volume) :
     MemLp (modulate ω f) p volume := by
-  refine ⟨?_, ?_⟩
-  · exact (continuous_subtype_val.comp (Real.continuous_fourierChar.comp
-      (continuous_const.inner continuous_id))).aestronglyMeasurable.mul hf.1
-  · convert hf.2 using 1
-    exact eLpNorm_congr_norm_ae (Filter.Eventually.of_forall fun t ↦ by simp [modulate])
+  have hmeas : AEStronglyMeasurable (modulate ω f) volume :=
+    (continuous_subtype_val.comp (Real.continuous_fourierChar.comp
+      (continuous_const.inner continuous_id))).aestronglyMeasurable.mul hf.aestronglyMeasurable
+  have hnorm : eLpNorm (modulate ω f) p volume = eLpNorm f p volume :=
+    eLpNorm_congr_norm_ae hmeas hf.aestronglyMeasurable
+      (Filter.Eventually.of_forall fun t ↦ by simp [modulate])
+  rw [memLp_iff, hnorm]
+  exact hf.eLpNorm_lt_top
 
 theorem crossAmbiguity_integrand_integrable
     (hf : MemLp f 2 volume) (hg : MemLp g 2 volume) (x ω : E) :

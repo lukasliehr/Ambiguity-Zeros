@@ -47,10 +47,13 @@ private theorem translate_mem {f : E → ℂ} (x : E) (hf : MemLp f 2 volume) :
 
 private theorem modulate_mem {f : E → ℂ} (ω : E) (hf : MemLp f 2 volume) :
     MemLp (modulate ω f) 2 volume := by
-  refine ⟨(char_cont ω).aestronglyMeasurable.mul hf.1, ?_⟩
-  convert hf.2 using 1
-  apply eLpNorm_congr_norm_ae
-  exact Filter.Eventually.of_forall fun t ↦ by simp [modulate]
+  have hmeas : AEStronglyMeasurable (modulate ω f) volume :=
+    (char_cont ω).aestronglyMeasurable.mul hf.aestronglyMeasurable
+  have hnorm : eLpNorm (modulate ω f) 2 volume = eLpNorm f 2 volume :=
+    eLpNorm_congr_norm_ae hmeas hf.aestronglyMeasurable
+      (Filter.Eventually.of_forall fun t ↦ by simp [modulate])
+  rw [memLp_iff, hnorm]
+  exact hf.eLpNorm_lt_top
 
 @[expose] def translation (x : E) : L2 E →ₗᵢ[ℂ] L2 E :=
   Lp.compMeasurePreservingₗᵢ ℂ (fun t : E ↦ t - x) (measurePreserving_sub_right volume x)
@@ -74,7 +77,7 @@ theorem continuous_modulation (ω : E) : Continuous (modulation ω : L2 E → L2
   intro f g
   simp only [dist_eq_norm, Lp.norm_def]
   congr 1
-  apply eLpNorm_congr_norm_ae
+  refine eLpNorm_congr_norm_ae (Lp.aestronglyMeasurable _) (Lp.aestronglyMeasurable _) ?_
   filter_upwards [Lp.coeFn_sub (modulation ω f) (modulation ω g), Lp.coeFn_sub f g,
     (modulate_mem ω (Lp.memLp f)).coeFn_toLp,
     (modulate_mem ω (Lp.memLp g)).coeFn_toLp] with t h₁ h₂ hf hg
@@ -106,6 +109,7 @@ private theorem fourier_modulate (ω : E) (f : E → ℂ) :
   congr 2
   rw [inner_sub_right, real_inner_comm ω v]
   simp [sub_eq_add_neg, add_comm]
+  rfl
 
 private theorem translate_schwartz (x : E) (s : SchwartzMap E ℂ) :
     translation x (s.toLp 2 volume) = (s.compSubConstCLM ℂ x).toLp 2 volume :=
@@ -231,7 +235,8 @@ theorem crossAmbiguity_fourier {f g : E → ℂ}
   rw [starRingEnd_apply, char_star, ← mul_assoc, char_mul]
   congr 2
   rw [inner_neg_right, real_inner_comm x ω]
-  ring
+  ring_nf
+  rfl
 
 theorem ambiguity_fourier {f : E → ℂ} (hf : MemLp f 2 volume) (x ω : E) :
     ambiguity (l2Fourier f hf) x ω = ambiguity f (-ω) x :=

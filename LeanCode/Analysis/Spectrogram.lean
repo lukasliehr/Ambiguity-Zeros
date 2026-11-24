@@ -43,18 +43,16 @@ private theorem translate_memLp' {s : E → ℂ} {p : ENNReal} (h : MemLp s p vo
   h.comp_measurePreserving (measurePreserving_sub_right volume x)
 
 private theorem conj_memLp' {s : E → ℂ} {p : ENNReal} (h : MemLp s p volume) :
-    MemLp (fun t ↦ star (s t)) p volume := by
-  refine ⟨h.aestronglyMeasurable.star, ?_⟩
-  rw [eLpNorm_congr_norm_ae (f := fun t ↦ star (s t)) (g := s)]
-  · exact h.eLpNorm_lt_top
-  · filter_upwards with t
-    simp
+    MemLp (fun t ↦ star (s t)) p volume :=
+  h.star
 
 private theorem fourier_shift (s : E → ℂ) (x η : E) :
     𝓕 (fun t ↦ s (t + x)) η = phase (inner ℝ x η) * 𝓕 s η := by
-  simpa [phase, Function.comp_def, innerₗ_apply_apply, Circle.smul_def] using
-    congrFun (VectorFourier.fourierIntegral_comp_add_right Real.fourierChar
-      (volume : Measure E) (innerₗ E) s x) η
+  have h := congrFun (VectorFourier.fourierIntegral_comp_add_right Real.fourierChar
+    (volume : Measure E) (innerₗ E) s x) η
+  change VectorFourier.fourierIntegral Real.fourierChar volume (innerₗ E) (fun t ↦ s (t + x)) η =
+    phase (inner ℝ x η) * VectorFourier.fourierIntegral Real.fourierChar volume (innerₗ E) s η
+  simpa [phase, Function.comp_def, innerₗ_apply_apply, Circle.smul_def] using h
 
 private def slice (w f : E → ℂ) (y : E) : E → ℂ := fun t ↦ f t * star (w (t - y))
 
@@ -96,7 +94,8 @@ private theorem corr_integrable {f : E → ℂ} (hf : MemLp f 2 volume) (x : E) 
     Integrable (corr f x) := by
   have h := (translate_memLp' hf (-((1 / 2 : ℝ) • x))).integrable_mul
     (conj_memLp' (translate_memLp' hf ((1 / 2 : ℝ) • x)))
-  simpa only [corr, Pi.mul_apply, sub_neg_eq_add] using h
+  refine h.congr (Filter.Eventually.of_forall fun t ↦ ?_)
+  simp only [corr, Pi.mul_apply, sub_neg_eq_add]
 
 private theorem star_corr_integrable {f : E → ℂ} (hf : MemLp f 2 volume) (x : E) :
     Integrable (fun t ↦ star (corr f x t)) := by

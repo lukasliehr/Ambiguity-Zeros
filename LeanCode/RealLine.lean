@@ -1,5 +1,9 @@
-import LeanCode.Definitions
-import AmbiguityZeros.ToMathlib.STFT
+module
+
+public import LeanCode.Definitions
+public import AmbiguityZeros.ToMathlib.STFT
+
+@[expose] public section
 
 noncomputable section
 open MeasureTheory

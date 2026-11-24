@@ -1,13 +1,15 @@
 module
 
-public import Mathlib
+public import Mathlib.Analysis.Fourier.FourierTransform
+public import Mathlib.Analysis.InnerProductSpace.PiL2
+public import Mathlib.MeasureTheory.Function.LpSpace.Basic
 
 @[expose] public section
 
 /-!
 The three main results of the paper.
 This is the paper-facing statement file; proof bodies are intentionally omitted.
-All three statements are proved in `Showcase_WithProofs.lean`.
+All three statements are proved in `Solution.lean`.
 `L2 d` is L²(ℝᵈ; ℂ), whose elements are identified up to equality almost everywhere.
 `star` is complex conjugation, `•` is scalar multiplication, and `''` is set image.
 -/

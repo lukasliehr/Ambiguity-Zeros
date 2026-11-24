@@ -88,8 +88,8 @@ theorem cubeTrain_memLp [Countable ι] {site : ι → Coord d}
       have hs : Summable (fun i ↦ c i * cubePulse L (t - site i)) :=
         summable_of_hasFiniteSupport (hterm t).finite
       exact hs.hasSum
-  refine ⟨hm.aestronglyMeasurable, ?_⟩
-  rw [eLpNorm_lt_top_iff_lintegral_rpow_enorm_lt_top (by norm_num) (by norm_num)]
+  rw [memLp_iff, eLpNorm_lt_top_iff_lintegral_rpow_enorm_lt_top (by norm_num) (by norm_num)
+    hm.aestronglyMeasurable]
   simp only [ENNReal.toReal_ofNat, ENNReal.rpow_two]
   have heq (t : Coord d) :
       ‖cubeTrain L site c t‖ₑ ^ 2 =
